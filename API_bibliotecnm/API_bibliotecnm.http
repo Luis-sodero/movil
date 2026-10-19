@@ -1,0 +1,29 @@
+@API_bibliotecnm_HostAddress = http://localhost:5023
+
+### Listar libros (desde la vista con autores/generos/disponibilidad)
+GET {{API_bibliotecnm_HostAddress}}/api/VistaLibros
+Accept: application/json
+
+### Listar libros (entidades)
+GET {{API_bibliotecnm_HostAddress}}/api/Libros
+Accept: application/json
+
+### Autores
+GET {{API_bibliotecnm_HostAddress}}/api/Autores
+Accept: application/json
+
+### Generos
+GET {{API_bibliotecnm_HostAddress}}/api/Generos
+Accept: application/json
+
+### Ejemplares
+GET {{API_bibliotecnm_HostAddress}}/api/Ejemplares
+Accept: application/json
+
+### Prestamos
+GET {{API_bibliotecnm_HostAddress}}/api/Prestamos
+Accept: application/json
+
+### Usuarios
+GET {{API_bibliotecnm_HostAddress}}/api/Usuarios
+Accept: application/json
