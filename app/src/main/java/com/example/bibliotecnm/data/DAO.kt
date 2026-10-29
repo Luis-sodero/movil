@@ -16,6 +16,9 @@ interface PrestamoPendienteDao {
     @Query("SELECT * FROM prestamosPendientes WHERE estado = 'PENDIENTE' ORDER BY timestampClic ASC")
     suspend fun getPendientesList(): List<PrestamoPendiente>
 
+    @Query("SELECT COUNT(*) FROM prestamosPendientes WHERE estado = 'PENDIENTE' AND libroId = :libroId AND usuarioId = :usuarioId")
+    suspend fun contarPendientesPorLibroYUsuario(libroId: Int, usuarioId: Int): Int
+
     @Query("UPDATE prestamosPendientes SET estado = :estado WHERE id = :id")
     suspend fun actualizarEstado(id: Long, estado: String)
 

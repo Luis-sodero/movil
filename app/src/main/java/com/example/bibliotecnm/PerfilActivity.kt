@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,24 +26,34 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bibliotecnm.data.PrestamoDto
 import com.example.bibliotecnm.data.SesionUsuario
 import com.example.bibliotecnm.viewmodel.PrestamosUiState
 import com.example.bibliotecnm.viewmodel.PrestamosViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,17 +63,47 @@ fun PantallaPerfil(
     prestamosViewModel: PrestamosViewModel = viewModel()
 ) {
     val uiState by prestamosViewModel.uiState.collectAsState()
+    val refrescando by prestamosViewModel.refrescando.collectAsState()
     var menuExpandido by remember { mutableStateOf(false) }
     val usuario = SesionUsuario.actual
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // Recarga al volver a primer plano y cada 30s
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                prestamosViewModel.cargarPrestamos(mostrarCargando = false)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000)
+            prestamosViewModel.cargarPrestamos(mostrarCargando = false)
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Mis Préstamos") },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { prestamosViewModel.cargarPrestamos(mostrarCargando = false) }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
                     }
                 }
             )
@@ -114,13 +155,19 @@ fun PantallaPerfil(
                 }
                 is PrestamosUiState.Exito -> {
                     val listaPrestamos = (uiState as PrestamosUiState.Exito).prestamos
-                    LazyColumn(
+                    PullToRefreshBox(
+                        isRefreshing = refrescando,
+                        onRefresh = { prestamosViewModel.cargarPrestamos(mostrarCargando = false) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
                     ) {
-                        items(listaPrestamos) { prestamo ->
-                            ItemPrestamo(prestamo = prestamo)
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(listaPrestamos) { prestamo ->
+                                ItemPrestamo(prestamo = prestamo)
+                            }
                         }
                     }
                 }

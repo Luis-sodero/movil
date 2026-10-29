@@ -12,9 +12,13 @@ open class PrestamoRepository(
 ) {
     private val syncMutex = Mutex()
 
-    suspend fun guardarPrestamoOffline(libroId: Int, titulo: String, usuarioId: Int, timestampClic: Long = System.currentTimeMillis()): PrestamoPendiente {
+    suspend fun guardarPrestamoOffline(libroId: Int, titulo: String, usuarioId: Int, timestampClic: Long = System.currentTimeMillis()): PrestamoPendiente? {
         if (dao == null) {
             throw UnsupportedOperationException("Use constructor with dao")
+        }
+        val existentes = dao.contarPendientesPorLibroYUsuario(libroId, usuarioId)
+        if (existentes > 0) {
+            return null
         }
         val base = PrestamoPendiente(
             libroId = libroId,
@@ -48,6 +52,12 @@ open class PrestamoRepository(
             return ResultadoPrestamo.SesionInvalida
         }
         val timestamp = System.currentTimeMillis()
+        if (dao != null) {
+            val existentes = dao.contarPendientesPorLibroYUsuario(libroId, usuarioId)
+            if (existentes > 0) {
+                return ResultadoPrestamo.ErrorDesconocido("Ya tienes una solicitud pendiente de este libro")
+            }
+        }
         return try {
             val resp = apiService.solicitarPrestamo(
                 SolicitudPrestamoRequest(
@@ -67,7 +77,10 @@ open class PrestamoRepository(
             }
         } catch (e: IOException) {
             try {
-                guardarPrestamoOffline(libroId, titulo, usuarioId, timestamp)
+                val guardado = guardarPrestamoOffline(libroId, titulo, usuarioId, timestamp)
+                if (guardado == null) {
+                    return ResultadoPrestamo.ErrorDesconocido("Ya tienes una solicitud pendiente de este libro")
+                }
             } catch (_: Exception) {
             }
             ResultadoPrestamo.GuardadoSinConexion
@@ -108,35 +121,7 @@ open class PrestamoRepository(
         }
     }
 
-    suspend fun solicitarPrestamo(libroId: Int): Result<SolicitudPrestamoResponse> {
-        val usuarioId = SesionUsuario.id
-        if (usuarioId <= 0) {
-            return Result.failure(Exception("Sesión no válida. Vuelve a iniciar sesión."))
-        }
-
-        return try {
-            val response = apiService.solicitarPrestamo(
-                SolicitudPrestamoRequest(libroId = libroId, usuarioId = usuarioId)
-            )
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                when (response.code()) {
-                    409 -> Result.failure(Exception("No hay ejemplares libres"))
-                    404 -> Result.failure(Exception("Usuario no encontrado"))
-                    else -> Result.failure(Exception("Error al solicitar préstamo"))
-                }
-            }
-        } catch (e: HttpException) {
-            if (e.code() == 409) {
-                Result.failure(Exception("No hay ejemplares libres"))
-            } else {
-                Result.failure(e)
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    // solicitarPrestamo antiguo eliminado (ya no se usa)
 
     suspend fun obtenerMisPrestamos(usuarioId: Int = SesionUsuario.id): Result<List<PrestamoDto>> {
         return try {

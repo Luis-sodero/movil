@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bibliotecnm.data.DataBaseLocal
 import com.example.bibliotecnm.data.PrestamoDto
-import com.example.bibliotecnm.data.PrestamoPendiente
 import com.example.bibliotecnm.data.PrestamoRepository
 import com.example.bibliotecnm.data.ResultadoPrestamo
 import com.example.bibliotecnm.data.RetrofitClient
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 sealed class PrestamosUiState {
     object Cargando : PrestamosUiState()
@@ -38,22 +38,42 @@ class PrestamosViewModel(application: Application) : AndroidViewModel(applicatio
     private val _resultadoPrestamo = MutableSharedFlow<ResultadoPrestamo>()
     val resultadoPrestamo: SharedFlow<ResultadoPrestamo> = _resultadoPrestamo.asSharedFlow()
 
+    private val _refrescando = MutableStateFlow(false)
+    val refrescando: StateFlow<Boolean> = _refrescando.asStateFlow()
+
     fun getRechazadosSinAvisar() = repository.getRechazadosSinAvisar()
 
     suspend fun marcarAvisado(id: Long) = repository.marcarAvisado(id)
 
     init {
-        cargarPrestamos()
+        cargarPrestamos(mostrarCargando = true)
     }
 
-    fun cargarPrestamos(usuarioId: Int = SesionUsuario.id) {
+    fun cargarPrestamos(usuarioId: Int = SesionUsuario.id, mostrarCargando: Boolean = true) {
         viewModelScope.launch {
-            _uiState.value = PrestamosUiState.Cargando
+            val estadoActual = _uiState.value
+            if (mostrarCargando && estadoActual !is PrestamosUiState.Exito) {
+                _uiState.value = PrestamosUiState.Cargando
+            }
+            if (!mostrarCargando) {
+                _refrescando.value = true
+            }
             val result = repository.obtenerMisPrestamos(usuarioId)
             result.onSuccess { prestamos ->
                 _uiState.value = PrestamosUiState.Exito(prestamos)
             }.onFailure { error ->
-                _uiState.value = PrestamosUiState.Error(error.message ?: "Error de conexión")
+                if (error is IOException && estadoActual is PrestamosUiState.Exito) {
+                    // conservar
+                } else if (error is IOException) {
+                    _uiState.value = PrestamosUiState.Error("Sin conexión, mostrando datos guardados")
+                } else {
+                    if (!(error is IOException && estadoActual is PrestamosUiState.Exito)) {
+                        _uiState.value = PrestamosUiState.Error(error.message ?: "Error de conexión")
+                    }
+                }
+            }
+            if (!mostrarCargando) {
+                _refrescando.value = false
             }
         }
     }
