@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_bibliotecnm.Data;
+using API_bibliotecnm.DTOs;
 using API_bibliotecnm.Models;
 
 namespace API_bibliotecnm.Controllers;
@@ -37,6 +38,40 @@ public class GenerosController : ControllerBase
         return genero;
     }
 
+    // PUT: api/Generos/5
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> PutGenero(int id, Genero genero)
+    {
+        if (id != genero.Id)
+        {
+            return BadRequest();
+        }
+
+        if (string.IsNullOrWhiteSpace(genero.Nombre))
+        {
+            return BadRequest(new MensajeDto { Mensaje = "El nombre es obligatorio." });
+        }
+
+        var existente = await _context.Generos.FindAsync(id);
+        if (existente == null)
+        {
+            return NotFound();
+        }
+
+        existente.Nombre = genero.Nombre.Trim();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new MensajeDto { Mensaje = "Ya existe un género con ese nombre." });
+        }
+
+        return NoContent();
+    }
+
     // POST: api/Generos
     [HttpPost]
     public async Task<ActionResult<Genero>> PostGenero(Genero genero)
@@ -58,7 +93,18 @@ public class GenerosController : ControllerBase
         }
 
         _context.Generos.Remove(genero);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new MensajeDto
+            {
+                Mensaje = "No se puede eliminar el género porque tiene libros asociados."
+            });
+        }
 
         return NoContent();
     }

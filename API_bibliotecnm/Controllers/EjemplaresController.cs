@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_bibliotecnm.Data;
+using API_bibliotecnm.DTOs;
 using API_bibliotecnm.Models;
 
 namespace API_bibliotecnm.Controllers;
@@ -9,6 +10,8 @@ namespace API_bibliotecnm.Controllers;
 [ApiController]
 public class EjemplaresController : ControllerBase
 {
+    private static readonly string[] EstadosValidos = { "activo", "mantenimiento", "baja" };
+
     private readonly ContextoBD _context;
 
     public EjemplaresController(ContextoBD context)
@@ -43,6 +46,50 @@ public class EjemplaresController : ControllerBase
         return ejemplar;
     }
 
+    // PUT: api/Ejemplares/5
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> PutEjemplar(int id, Ejemplar ejemplar)
+    {
+        if (id != ejemplar.Id)
+        {
+            return BadRequest();
+        }
+
+        if (string.IsNullOrWhiteSpace(ejemplar.CodigoBarras))
+        {
+            return BadRequest(new MensajeDto { Mensaje = "El código de barras es obligatorio." });
+        }
+
+        if (!EstadosValidos.Contains(ejemplar.Estado))
+        {
+            return BadRequest(new MensajeDto { Mensaje = "El estado debe ser activo, mantenimiento o baja." });
+        }
+
+        var existente = await _context.Ejemplares.FindAsync(id);
+        if (existente == null)
+        {
+            return NotFound();
+        }
+
+        existente.LibroId = ejemplar.LibroId;
+        existente.CodigoBarras = ejemplar.CodigoBarras.Trim();
+        existente.Estado = ejemplar.Estado;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new MensajeDto
+            {
+                Mensaje = "No se pudo actualizar: código de barras duplicado o libro inexistente."
+            });
+        }
+
+        return NoContent();
+    }
+
     // POST: api/Ejemplares
     [HttpPost]
     public async Task<ActionResult<Ejemplar>> PostEjemplar(Ejemplar ejemplar)
@@ -64,7 +111,18 @@ public class EjemplaresController : ControllerBase
         }
 
         _context.Ejemplares.Remove(ejemplar);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new MensajeDto
+            {
+                Mensaje = "No se puede eliminar el ejemplar porque tiene préstamos registrados."
+            });
+        }
 
         return NoContent();
     }

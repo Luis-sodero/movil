@@ -159,6 +159,8 @@ public class ContextoBD : DbContext
             entity.Property(e => e.FechaPrestamo).HasColumnName("fecha_prestamo").HasColumnType("timestamptz").HasDefaultValueSql("now()");
             entity.Property(e => e.FechaLimite).HasColumnName("fecha_limite").HasColumnType("date");
             entity.Property(e => e.FechaDevolucion).HasColumnName("fecha_devolucion").HasColumnType("timestamptz");
+            entity.Property(e => e.FechaSolicitud).HasColumnName("fecha_solicitud").HasColumnType("timestamptz");
+            entity.Property(e => e.FechaRecepcion).HasColumnName("fecha_recepcion").HasColumnType("timestamptz");
 
             entity.HasIndex(e => e.UsuarioId).HasDatabaseName("ix_prestamos_usuario");
 

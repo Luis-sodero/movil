@@ -11,7 +11,10 @@ builder.Services.AddDbContext<ContextoBD>(options =>
 // Controllers + manejo de ciclos en el JSON
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
-        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+    {
+        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 // CORS para consumir la API desde el front (Live Server)
 builder.Services.AddCors(options =>
@@ -32,6 +35,10 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Interfaz web (wwwroot). index.html se sirve por defecto en "/".
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -48,5 +55,7 @@ app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();

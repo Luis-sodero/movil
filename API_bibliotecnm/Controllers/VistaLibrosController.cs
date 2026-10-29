@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_bibliotecnm.Data;
-using API_bibliotecnm.Models;
+using API_bibliotecnm.DTOs;
 
 namespace API_bibliotecnm.Controllers;
 
@@ -19,27 +19,50 @@ public class VistaLibrosController : ControllerBase
 
     // GET: api/VistaLibros
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<VistaLibro>>> GetVistaLibros()
+    public async Task<ActionResult<IEnumerable<VistaLibroDto>>> GetVistaLibros()
     {
-        return await _context.VistaLibros
+        var result = await _context.VistaLibros
             .AsNoTracking()
             .OrderBy(l => l.Id)
+            .Select(l => new VistaLibroDto
+            {
+                Id = l.Id,
+                Titulo = l.Titulo,
+                Anio = l.Anio,
+                Autores = l.Autores,
+                Generos = l.Generos,
+                EjemplaresTotal = l.EjemplaresTotal,
+                EjemplaresDisponibles = l.EjemplaresDisponibles
+            })
             .ToListAsync();
+
+        return Ok(result);
     }
 
     // GET: api/VistaLibros/5
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<VistaLibro>> GetVistaLibro(int id)
+    public async Task<ActionResult<VistaLibroDto>> GetVistaLibro(int id)
     {
         var vistaLibro = await _context.VistaLibros
             .AsNoTracking()
-            .FirstOrDefaultAsync(l => l.Id == id);
+            .Where(l => l.Id == id)
+            .Select(l => new VistaLibroDto
+            {
+                Id = l.Id,
+                Titulo = l.Titulo,
+                Anio = l.Anio,
+                Autores = l.Autores,
+                Generos = l.Generos,
+                EjemplaresTotal = l.EjemplaresTotal,
+                EjemplaresDisponibles = l.EjemplaresDisponibles
+            })
+            .FirstOrDefaultAsync();
 
         if (vistaLibro == null)
         {
             return NotFound();
         }
 
-        return vistaLibro;
+        return Ok(vistaLibro);
     }
 }

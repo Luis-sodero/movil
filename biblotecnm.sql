@@ -133,10 +133,11 @@ FROM libros l;
 -- DATOS DE PRUEBA
 -- =====================================================================
 
--- Usuario de prueba (el hash es un marcador: los usuarios reales
--- se registran desde la API con su hash verdadero).
+-- Usuario de prueba: correo prueba@bibliotecnm.local, contraseña 123456
+-- (password_hash = SHA-256 de "123456").
 INSERT INTO usuarios (nombre, correo, password_hash, rol) VALUES
-    ('Usuario de Prueba', 'prueba@bibliotecnm.local', 'HASH_DE_PRUEBA', 'lector');
+    ('Usuario de Prueba', 'prueba@bibliotecnm.local',
+     '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'lector');
 
 INSERT INTO autores (nombre) VALUES
     ('Paulo Coelho'),
@@ -179,3 +180,7 @@ INSERT INTO ejemplares (libro_id, codigo_barras) VALUES
 INSERT INTO prestamos (usuario_id, ejemplar_id, fecha_limite) VALUES
     (1, 2, current_date + 14),
     (1, 5, current_date + 14);
+-- Migracion para soporte de prioridad por timestamp de solicitud
+ALTER TABLE prestamos ADD COLUMN IF NOT EXISTS fecha_solicitud TIMESTAMPTZ;
+ALTER TABLE prestamos ADD COLUMN IF NOT EXISTS fecha_recepcion TIMESTAMPTZ;
+

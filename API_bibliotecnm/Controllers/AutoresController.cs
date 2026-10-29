@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_bibliotecnm.Data;
+using API_bibliotecnm.DTOs;
 using API_bibliotecnm.Models;
 
 namespace API_bibliotecnm.Controllers;
@@ -37,6 +38,40 @@ public class AutoresController : ControllerBase
         return autor;
     }
 
+    // PUT: api/Autores/5
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> PutAutor(int id, Autor autor)
+    {
+        if (id != autor.Id)
+        {
+            return BadRequest();
+        }
+
+        if (string.IsNullOrWhiteSpace(autor.Nombre))
+        {
+            return BadRequest(new MensajeDto { Mensaje = "El nombre es obligatorio." });
+        }
+
+        var existente = await _context.Autores.FindAsync(id);
+        if (existente == null)
+        {
+            return NotFound();
+        }
+
+        existente.Nombre = autor.Nombre.Trim();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new MensajeDto { Mensaje = "Ya existe un autor con ese nombre." });
+        }
+
+        return NoContent();
+    }
+
     // POST: api/Autores
     [HttpPost]
     public async Task<ActionResult<Autor>> PostAutor(Autor autor)
@@ -58,7 +93,18 @@ public class AutoresController : ControllerBase
         }
 
         _context.Autores.Remove(autor);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new MensajeDto
+            {
+                Mensaje = "No se puede eliminar el autor porque tiene libros asociados."
+            });
+        }
 
         return NoContent();
     }

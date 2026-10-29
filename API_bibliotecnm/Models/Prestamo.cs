@@ -14,6 +14,10 @@ public class Prestamo
 
     public DateTime? FechaDevolucion { get; set; }
 
+    public DateTime? FechaSolicitud { get; set; }
+
+    public DateTime? FechaRecepcion { get; set; }
+
     public Usuario Usuario { get; set; } = null!;
 
     public Ejemplar Ejemplar { get; set; } = null!;
