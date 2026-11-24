@@ -1,0 +1,5 @@
+## Ignorar artefactos de compilación de .NET
+bin/
+obj/
+.vs/
+*.user

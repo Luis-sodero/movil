@@ -10,6 +10,9 @@ interface ApiService {
     @POST("api/Auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
+    @POST("api/Auth/registro")
+    suspend fun registrar(@Body request: RegistroRequest): Response<LoginResponse>
+
     @GET("api/VistaLibros")
     suspend fun getVistaLibros(): List<LibroVistaDto>
 

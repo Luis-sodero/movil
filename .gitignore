@@ -13,3 +13,19 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Configuración local y archivos generados
+**/bin/
+**/obj/
+**/.vs/
+**/.gradle/
+**/.idea/
+**/build/
+**/local.properties
+*.user
+*.zip
+.env
+.env.*
+!.env.example
+gradle_errors*.txt
+__pycache__/

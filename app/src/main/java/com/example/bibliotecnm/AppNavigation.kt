@@ -6,9 +6,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bibliotecnm.data.SesionUsuario
 import com.example.bibliotecnm.ui.PantallaLogin
+import com.example.bibliotecnm.ui.PantallaRegistro
 
 object Rutas {
     const val LOGIN = "login"
+    const val REGISTRO = "registro"
     const val PRINCIPAL = "principal"
     const val PERFIL = "perfil"
 }
@@ -28,7 +30,20 @@ fun AppNavigation() {
                     navController.navigate(Rutas.PRINCIPAL) {
                         popUpTo(Rutas.LOGIN) { inclusive = true }
                     }
-                }
+                },
+                onCrearCuenta = { navController.navigate(Rutas.REGISTRO) }
+            )
+        }
+
+        composable(Rutas.REGISTRO) {
+            PantallaRegistro(
+                onRegistroExitoso = { usuario ->
+                    SesionUsuario.iniciar(usuario)
+                    navController.navigate(Rutas.PRINCIPAL) {
+                        popUpTo(Rutas.LOGIN) { inclusive = true }
+                    }
+                },
+                onVolverAlLogin = { navController.popBackStack() }
             )
         }
 

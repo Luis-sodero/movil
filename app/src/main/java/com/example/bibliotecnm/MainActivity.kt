@@ -53,8 +53,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -70,8 +72,105 @@ import com.example.bibliotecnm.ui.theme.BibliotecnmTheme
 import com.example.bibliotecnm.viewmodel.LibrosUiState
 import com.example.bibliotecnm.viewmodel.LibrosViewModel
 import com.example.bibliotecnm.viewmodel.SolicitudUiState
+import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.Normalizer
+
+private fun sinAcentos(texto: String): String {
+    return Normalizer.normalize(texto, Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}+"), "")
+}
+
+private fun libroCoincide(libro: LibroVistaDto, texto: String): Boolean {
+    val busqueda = sinAcentos(texto.trim()).lowercase()
+    if (busqueda.isEmpty()) return true
+
+    return listOf(libro.titulo, libro.autores, libro.generos)
+        .any { campo -> campo != null && sinAcentos(campo).lowercase().contains(busqueda) }
+}
+
+@Composable
+private fun ListaLibros(
+    libros: List<LibroVistaDto>,
+    solicitudState: SolicitudUiState,
+    onSolicitar: (LibroVistaDto) -> Unit
+) {
+    if (libros.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "No se encontraron libros")
+        }
+        return
+    }
+
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(libros) { libro ->
+            val disponibles = libro.ejemplaresDisponibles ?: 0
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = RetrofitClient.urlImagen(libro.urlPortada),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(width = 60.dp, height = 90.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.ic_book_placeholder),
+                        error = painterResource(R.drawable.ic_book_placeholder)
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = libro.titulo ?: "",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Autor: ${libro.autores ?: "-"}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Géneros: ${libro.generos ?: "-"}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "Año: ${libro.anio ?: "-"}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = if (disponibles > 0) "Disponible ($disponibles)" else "No disponible",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (disponibles > 0) Color(0xFF2E7D32) else Color.Red
+                        )
+                    }
+
+                    Button(
+                        onClick = { onSolicitar(libro) },
+                        enabled = disponibles > 0 && solicitudState !is SolicitudUiState.Cargando
+                    ) {
+                        Text(text = "Solicitar")
+                    }
+                }
+            }
+        }
+    }
+}
 
 class MainActivity : ComponentActivity() {
     private var syncManager: SyncManager? = null
@@ -201,7 +300,16 @@ fun PantallaPrincipal(
                         }
                     }
                 ) {
-                    Text(text = "Sugerencias...", modifier = Modifier.padding(16.dp))
+                    val estado = uiState
+                    if (estado is LibrosUiState.Exito) {
+                        ListaLibros(
+                            libros = estado.libros.filter { libroCoincide(it, textSearch) },
+                            solicitudState = solicitudState
+                        ) { libro ->
+                            libroSeleccionado = libro
+                            mostrarDialogo = true
+                        }
+                    }
                 }
 
                 if (!activeSearch) {
@@ -253,71 +361,12 @@ fun PantallaPrincipal(
                             onRefresh = { librosViewModel.cargarLibros(mostrarCargando = false) },
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                items(estado.libros) { libro ->
-                                    val disponibles = libro.ejemplaresDisponibles ?: 0
-
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(width = 60.dp, height = 90.dp)
-                                                    .clip(RoundedCornerShape(4.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(text = "Libro", color = Color.Gray)
-                                            }
-
-                                            Spacer(modifier = Modifier.width(12.dp))
-
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = libro.titulo ?: "",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                Text(
-                                                    text = "Autor: ${libro.autores ?: "-"}",
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                                Text(
-                                                    text = "Géneros: ${libro.generos ?: "-"}",
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                                Text(
-                                                    text = "Año: ${libro.anio ?: "-"}",
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                                Text(
-                                                    text = if (disponibles > 0) "Disponible ($disponibles)" else "No disponible",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = if (disponibles > 0) Color(0xFF2E7D32) else Color.Red
-                                                )
-                                            }
-
-                                            Button(
-                                                onClick = {
-                                                    libroSeleccionado = libro
-                                                    mostrarDialogo = true
-                                                },
-                                                enabled = disponibles > 0 &&
-                                                        solicitudState !is SolicitudUiState.Cargando
-                                            ) {
-                                                Text(text = "Solicitar")
-                                            }
-                                        }
-                                    }
-                                }
+                            ListaLibros(
+                                libros = estado.libros.filter { libroCoincide(it, textSearch) },
+                                solicitudState = solicitudState
+                            ) { libro ->
+                                libroSeleccionado = libro
+                                mostrarDialogo = true
                             }
                         }
                     }
