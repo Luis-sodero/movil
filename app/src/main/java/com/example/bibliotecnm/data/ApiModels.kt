@@ -9,6 +9,15 @@ data class LoginRequest(
     val password: String
 )
 
+data class RegistroRequest(
+    @SerializedName("nombre")
+    val nombre: String,
+    @SerializedName("correo")
+    val correo: String,
+    @SerializedName("password")
+    val password: String
+)
+
 data class LoginResponse(
     @SerializedName("id")
     val id: Int? = null,
@@ -31,6 +40,10 @@ data class LibroVistaDto(
     val autores: String? = null,
     @SerializedName("generos")
     val generos: String? = null,
+    @SerializedName("urlPortada")
+    val urlPortada: String? = null,
+    @SerializedName("urlPdf")
+    val urlPdf: String? = null,
     @SerializedName("ejemplaresTotal")
     val ejemplaresTotal: Int? = null,
     @SerializedName("ejemplaresDisponibles")
