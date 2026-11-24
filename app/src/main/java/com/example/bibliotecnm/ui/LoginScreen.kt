@@ -58,6 +58,7 @@ import com.example.bibliotecnm.viewmodel.LoginViewModel
 @Composable
 fun PantallaLogin(
     onLoginExitoso: () -> Unit,
+    onCrearCuenta: () -> Unit = {},
     loginViewModel: LoginViewModel = viewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
@@ -251,7 +252,17 @@ fun PantallaLogin(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    TextButton(
+                        onClick = onCrearCuenta,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !cargando
+                    ) {
+                        Text("¿No tienes cuenta? Crear cuenta")
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
                         text = "Usuario de prueba: prueba@bibliotecnm.local · contraseña 123456",
