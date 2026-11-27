@@ -1,36 +1,59 @@
 package com.example.bibliotecnm.data
 
-import com.google.gson.Gson
+import java.io.IOException
 
 class AuthRepository {
     private val apiService = RetrofitClient.apiService
-    private val gson = Gson()
 
     suspend fun login(correo: String, password: String): Result<LoginResponse> {
         return try {
             val response = apiService.login(LoginRequest(correo.trim(), password))
 
             if (!response.isSuccessful) {
-                val mensaje = response.errorBody()?.string()?.let { body ->
-                    runCatching { gson.fromJson(body, MensajeDto::class.java)?.mensaje }.getOrNull()
+                val codigo = when (response.code()) {
+                    401 -> ErrorApp.CREDENCIALES_INVALIDAS
+                    400 -> ErrorApp.DATOS_INVALIDOS
+                    else -> ErrorApp.SERVIDOR
                 }
-
-                val texto = when (response.code()) {
-                    401 -> mensaje ?: "Correo o contraseña incorrectos."
-                    else -> mensaje ?: "No se pudo iniciar sesión (${response.code()})."
-                }
-
-                return Result.failure(Exception(texto))
+                return Result.failure(ErrorAppException(codigo))
             }
 
             val usuario = response.body()
             if (usuario?.id == null) {
-                Result.failure(Exception("Respuesta inválida del servidor."))
+                Result.failure(ErrorAppException(ErrorApp.RESPUESTA_INVALIDA))
             } else {
                 Result.success(usuario)
             }
+        } catch (e: IOException) {
+            Result.failure(ErrorAppException(ErrorApp.SIN_CONEXION))
         } catch (e: Exception) {
-            Result.failure(Exception("No se pudo conectar con la API. Verifica que esté en ejecución."))
+            Result.failure(ErrorAppException(ErrorApp.SERVIDOR))
+        }
+    }
+
+    suspend fun registrar(nombre: String, correo: String, password: String): Result<LoginResponse> {
+        return try {
+            val response = apiService.registrar(RegistroRequest(nombre.trim(), correo.trim(), password))
+
+            if (!response.isSuccessful) {
+                val codigo = when (response.code()) {
+                    409 -> ErrorApp.CORREO_YA_EXISTE
+                    400 -> ErrorApp.DATOS_INVALIDOS
+                    else -> ErrorApp.SERVIDOR
+                }
+                return Result.failure(ErrorAppException(codigo))
+            }
+
+            val usuario = response.body()
+            if (usuario?.id == null) {
+                Result.failure(ErrorAppException(ErrorApp.RESPUESTA_INVALIDA))
+            } else {
+                Result.success(usuario)
+            }
+        } catch (e: IOException) {
+            Result.failure(ErrorAppException(ErrorApp.SIN_CONEXION))
+        } catch (e: Exception) {
+            Result.failure(ErrorAppException(ErrorApp.SERVIDOR))
         }
     }
 }

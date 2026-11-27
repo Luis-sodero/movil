@@ -13,3 +13,40 @@ data class PrestamoPendiente(
     val estado: String = "PENDIENTE",
     val avisado: Boolean = false
 )
+
+@Entity(tableName = "librosGuardados")
+data class LibroGuardado(
+    @PrimaryKey val id: Int,
+    val titulo: String?,
+    val anio: Int?,
+    val autores: String?,
+    val generos: String?,
+    val urlPortada: String?,
+    val urlPdf: String?,
+    val ejemplaresTotal: Int?,
+    val ejemplaresDisponibles: Int?
+)
+
+fun LibroVistaDto.aEntidad(): LibroGuardado = LibroGuardado(
+    id = id ?: 0,
+    titulo = titulo,
+    anio = anio,
+    autores = autores,
+    generos = generos,
+    urlPortada = urlPortada,
+    urlPdf = urlPdf,
+    ejemplaresTotal = ejemplaresTotal,
+    ejemplaresDisponibles = ejemplaresDisponibles
+)
+
+fun LibroGuardado.aDto(): LibroVistaDto = LibroVistaDto(
+    id = id,
+    titulo = titulo,
+    anio = anio,
+    autores = autores,
+    generos = generos,
+    urlPortada = urlPortada,
+    urlPdf = urlPdf,
+    ejemplaresTotal = ejemplaresTotal,
+    ejemplaresDisponibles = ejemplaresDisponibles
+)

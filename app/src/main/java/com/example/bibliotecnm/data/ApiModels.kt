@@ -9,6 +9,15 @@ data class LoginRequest(
     val password: String
 )
 
+data class RegistroRequest(
+    @SerializedName("nombre")
+    val nombre: String,
+    @SerializedName("correo")
+    val correo: String,
+    @SerializedName("password")
+    val password: String
+)
+
 data class LoginResponse(
     @SerializedName("id")
     val id: Int? = null,
@@ -31,6 +40,10 @@ data class LibroVistaDto(
     val autores: String? = null,
     @SerializedName("generos")
     val generos: String? = null,
+    @SerializedName("urlPortada")
+    val urlPortada: String? = null,
+    @SerializedName("urlPdf")
+    val urlPdf: String? = null,
     @SerializedName("ejemplaresTotal")
     val ejemplaresTotal: Int? = null,
     @SerializedName("ejemplaresDisponibles")
@@ -81,5 +94,31 @@ sealed class ResultadoPrestamo {
     object SinEjemplares : ResultadoPrestamo()
     object UsuarioNoEncontrado : ResultadoPrestamo()
     object SesionInvalida : ResultadoPrestamo()
-    data class ErrorDesconocido(val mensaje: String) : ResultadoPrestamo()
+    data class ErrorDesconocido(val codigo: ErrorApp) : ResultadoPrestamo()
 }
+
+enum class ErrorApp {
+    CAMPOS_LOGIN,
+    CAMPOS_REGISTRO,
+    CORREO_INVALIDO,
+    CONTRASENA_CORTA,
+    CREDENCIALES_INVALIDAS,
+    CORREO_YA_EXISTE,
+    DATOS_INVALIDOS,
+    RESPUESTA_INVALIDA,
+    SIN_CONEXION,
+    SERVIDOR,
+    SIN_ESPACIO,
+    PDF_DANADO,
+    PDF_NO_DISPONIBLE,
+    LECTURA_SIN_PDF,
+    SIN_EJEMPLARES,
+    USUARIO_NO_ENCONTRADO,
+    SESION_INVALIDA,
+    SOLICITUD_PENDIENTE,
+    AVISO_SIN_CONEXION,
+    AVISO_NO_ACTUALIZADO,
+    DESCONOCIDO
+}
+
+class ErrorAppException(val codigo: ErrorApp) : Exception()

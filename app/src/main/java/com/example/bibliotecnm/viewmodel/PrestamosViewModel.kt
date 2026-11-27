@@ -4,10 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bibliotecnm.data.DataBaseLocal
+import com.example.bibliotecnm.data.ErrorApp
 import com.example.bibliotecnm.data.PrestamoDto
 import com.example.bibliotecnm.data.PrestamoRepository
-import com.example.bibliotecnm.data.ResultadoPrestamo
 import com.example.bibliotecnm.data.RetrofitClient
+import com.example.bibliotecnm.data.ResultadoPrestamo
 import com.example.bibliotecnm.data.SesionUsuario
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,7 @@ import java.io.IOException
 sealed class PrestamosUiState {
     object Cargando : PrestamosUiState()
     data class Exito(val prestamos: List<PrestamoDto>) : PrestamosUiState()
-    data class Error(val mensaje: String) : PrestamosUiState()
+    data class Error(val codigo: ErrorApp) : PrestamosUiState()
 }
 
 class PrestamosViewModel(application: Application) : AndroidViewModel(application) {
@@ -40,6 +41,9 @@ class PrestamosViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _refrescando = MutableStateFlow(false)
     val refrescando: StateFlow<Boolean> = _refrescando.asStateFlow()
+
+    private val _aviso = MutableStateFlow<ErrorApp?>(null)
+    val aviso: StateFlow<ErrorApp?> = _aviso.asStateFlow()
 
     fun getRechazadosSinAvisar() = repository.getRechazadosSinAvisar()
 
@@ -60,16 +64,18 @@ class PrestamosViewModel(application: Application) : AndroidViewModel(applicatio
             }
             val result = repository.obtenerMisPrestamos(usuarioId)
             result.onSuccess { prestamos ->
+                _aviso.value = null
                 _uiState.value = PrestamosUiState.Exito(prestamos)
             }.onFailure { error ->
-                if (error is IOException && estadoActual is PrestamosUiState.Exito) {
-                    // conservar
-                } else if (error is IOException) {
-                    _uiState.value = PrestamosUiState.Error("Sin conexión, mostrando datos guardados")
+                val codigo = if (error is IOException) {
+                    ErrorApp.AVISO_SIN_CONEXION
                 } else {
-                    if (!(error is IOException && estadoActual is PrestamosUiState.Exito)) {
-                        _uiState.value = PrestamosUiState.Error(error.message ?: "Error de conexión")
-                    }
+                    ErrorApp.AVISO_NO_ACTUALIZADO
+                }
+                if (_uiState.value is PrestamosUiState.Exito) {
+                    _aviso.value = codigo
+                } else {
+                    _uiState.value = PrestamosUiState.Error(codigo)
                 }
             }
             if (!mostrarCargando) {
@@ -82,7 +88,7 @@ class PrestamosViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val res = repository.pedirPrestamo(libroId, titulo)
             _resultadoPrestamo.emit(res)
-            if (res is com.example.bibliotecnm.data.ResultadoPrestamo.Confirmado) {
+            if (res is ResultadoPrestamo.Confirmado) {
                 cargarPrestamos()
             }
         }

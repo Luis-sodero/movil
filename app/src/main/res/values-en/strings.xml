@@ -1,0 +1,111 @@
+<resources>
+    <string name="app_name">Bibliotecnm</string>
+    <string name="logo_letra">B</string>
+
+    <string name="volver">Back</string>
+    <string name="actualizar">Refresh</string>
+    <string name="cancelar">Cancel</string>
+    <string name="confirmar">Confirm</string>
+    <string name="entendido">Got it</string>
+    <string name="reintentar">Retry</string>
+    <string name="eliminar">Delete</string>
+    <string name="leer">Read</string>
+    <string name="buscar">Search...</string>
+    <string name="libro_generico">Book</string>
+    <string name="libro_sin_titulo">Untitled book</string>
+    <string name="usuario_generico">User</string>
+    <string name="lector_generico">reader</string>
+    <string name="autor">Author: %1$s</string>
+    <string name="autor_desconocido">Unknown</string>
+    <string name="generos">Genres: %1$s</string>
+    <string name="anio">Year: %1$s</string>
+    <string name="valor_desconocido">-</string>
+    <string name="disponible">Available (%1$d)</string>
+    <string name="no_disponible">Unavailable</string>
+    <string name="ver_detalle">View details</string>
+    <string name="solicitar">Request</string>
+
+    <string name="sin_libros">No books found</string>
+    <string name="titulos_recomendados">Recommended titles</string>
+    <string name="confirmar_prestamo">Confirm loan</string>
+    <string name="confirmar_prestamo_pregunta">Request loan of \"%1$s\"?</string>
+    <string name="aviso_sin_conexion">Offline. Showing saved data.</string>
+    <string name="aviso_no_actualizado">Could not update. Showing saved data.</string>
+    <string name="solicitud_guardada">Offline. Your request was saved and will be sent when you are back online.</string>
+    <string name="solicitud_exitosa">Loan requested successfully</string>
+    <string name="ir_al_perfil">Go to profile</string>
+
+    <string name="login_bienvenida">Your library, always with you</string>
+    <string name="login_titulo">Sign in</string>
+    <string name="login_subtitulo">Sign in with the email and password registered at the library.</string>
+    <string name="correo_electronico">Email</string>
+    <string name="correo_ejemplo">user@email.com</string>
+    <string name="contrasena">Password</string>
+    <string name="contrasena_registro">Password (at least 6 characters)</string>
+    <string name="ocultar">Hide</string>
+    <string name="ver_contrasena">Show</string>
+    <string name="verificando">Signing in…</string>
+    <string name="entrar">Sign in</string>
+    <string name="no_tienes_cuenta">No account? Sign up</string>
+    <string name="usuario_prueba">Test user: prueba@bibliotecnm.local · password %1$s</string>
+    <string name="api_url">API: %1$s</string>
+
+    <string name="registro_titulo">Create account</string>
+    <string name="registro_subtitulo">Sign up to use your library.</string>
+    <string name="nombre">Name</string>
+    <string name="nombre_placeholder">Your full name</string>
+    <string name="registrando">Registering…</string>
+    <string name="registrarme">Sign up</string>
+    <string name="ya_tengo_cuenta">I already have an account. Back to sign in</string>
+
+    <string name="detalle_titulo">Book details</string>
+    <string name="disponible_sin_conexion">Available offline</string>
+    <string name="leer_libro">Read book</string>
+    <string name="eliminar_descarga">Delete download</string>
+    <string name="descargar_para_leer">Download to read offline</string>
+    <string name="descargando">Downloading %1$d%%</string>
+
+    <string name="lectura_titulo">Reader</string>
+    <string name="abriendo_pdf">Opening PDF...</string>
+    <string name="pagina">Page %1$d of %2$d</string>
+    <string name="pagina_contenido">Page %1$d</string>
+
+    <string name="perfil_titulo">My loans</string>
+    <string name="rol">Role: %1$s</string>
+    <string name="mis_descargas">My downloads</string>
+    <string name="configuracion_perfil">Profile settings</string>
+    <string name="configuracion">Settings</string>
+    <string name="cerrar_sesion">Sign out</string>
+    <string name="devuelto">Returned</string>
+    <string name="devolver_el">Due: %1$s</string>
+
+    <string name="descargas_vacias">No downloads yet. Open a book and tap &quot;Download to read offline&quot;.</string>
+    <string name="eliminar_descarga_pregunta">Delete the download of &quot;%1$s&quot;?</string>
+
+    <string name="idioma">Language</string>
+    <string name="idioma_sistema">Use system language</string>
+    <string name="idioma_es">Español</string>
+    <string name="idioma_en">English</string>
+    <string name="idioma_fr">Français</string>
+    <string name="idioma_ja">日本語</string>
+
+    <string name="error_campos_login">Enter your email and password.</string>
+    <string name="error_campos_registro">Fill in all fields.</string>
+    <string name="error_correo_invalido">Enter a valid email address.</string>
+    <string name="error_contrasena_corta">Password must be at least 6 characters long.</string>
+    <string name="error_credenciales">Incorrect email or password.</string>
+    <string name="error_correo_existe">An account with that email already exists.</string>
+    <string name="error_datos_invalidos">Check the form fields.</string>
+    <string name="error_respuesta">Invalid server response.</string>
+    <string name="error_sin_conexion">No connection. Check your internet and try again.</string>
+    <string name="error_servidor">Server error. Try again.</string>
+    <string name="error_sin_espacio">No space left on the device. Free up space and try again.</string>
+    <string name="error_pdf_danado">The PDF file is corrupted. Download it again.</string>
+    <string name="error_pdf_no_disponible">This book has no PDF to download.</string>
+    <string name="error_lectura_sin_pdf">You need a connection or to download the book to read it.</string>
+    <string name="error_sin_ejemplares">No copies available.</string>
+    <string name="error_usuario_no_encontrado">User not found.</string>
+    <string name="error_sesion_invalida">Session expired. Sign in again.</string>
+    <string name="error_solicitud_pendiente">You already have a pending request for this book.</string>
+    <string name="error_desconocido">Could not complete the action. Try again.</string>
+</resources>

@@ -2,6 +2,7 @@ package com.example.bibliotecnm.data
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -30,4 +31,19 @@ interface PrestamoPendienteDao {
 
     @Query("DELETE FROM prestamosPendientes WHERE id = :id")
     suspend fun eliminar(id: Long)
+}
+
+@Dao
+interface LibroDao {
+    @Query("SELECT * FROM librosGuardados ORDER BY id")
+    fun observar(): Flow<List<LibroGuardado>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardar(libros: List<LibroGuardado>)
+
+    @Query("SELECT * FROM librosGuardados WHERE id = :id")
+    suspend fun buscar(id: Int): LibroGuardado?
+
+    @Query("DELETE FROM librosGuardados WHERE id = :id")
+    suspend fun eliminar(id: Int)
 }

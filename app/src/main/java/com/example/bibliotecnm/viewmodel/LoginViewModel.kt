@@ -1,8 +1,11 @@
 package com.example.bibliotecnm.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bibliotecnm.data.AuthRepository
+import com.example.bibliotecnm.data.ErrorApp
+import com.example.bibliotecnm.data.ErrorAppException
 import com.example.bibliotecnm.data.LoginResponse
 import com.example.bibliotecnm.data.SesionUsuario
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,10 +17,10 @@ sealed class LoginUiState {
     object Inactivo : LoginUiState()
     object Cargando : LoginUiState()
     data class Exito(val usuario: LoginResponse) : LoginUiState()
-    data class Error(val mensaje: String) : LoginUiState()
+    data class Error(val codigo: ErrorApp) : LoginUiState()
 }
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = AuthRepository()
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Inactivo)
@@ -25,7 +28,7 @@ class LoginViewModel : ViewModel() {
 
     fun login(correo: String, password: String) {
         if (correo.isBlank() || password.isBlank()) {
-            _uiState.value = LoginUiState.Error("Ingresa tu correo y contraseña.")
+            _uiState.value = LoginUiState.Error(ErrorApp.CAMPOS_LOGIN)
             return
         }
 
@@ -34,13 +37,12 @@ class LoginViewModel : ViewModel() {
 
             repository.login(correo, password)
                 .onSuccess { usuario ->
-                    SesionUsuario.iniciar(usuario)
+                    SesionUsuario.iniciar(getApplication(), usuario)
                     _uiState.value = LoginUiState.Exito(usuario)
                 }
                 .onFailure { error ->
-                    _uiState.value = LoginUiState.Error(
-                        error.message ?: "No se pudo iniciar sesión."
-                    )
+                    val codigo = (error as? ErrorAppException)?.codigo ?: ErrorApp.DESCONOCIDO
+                    _uiState.value = LoginUiState.Error(codigo)
                 }
         }
     }

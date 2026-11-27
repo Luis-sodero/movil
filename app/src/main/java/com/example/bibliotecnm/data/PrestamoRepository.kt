@@ -55,7 +55,7 @@ open class PrestamoRepository(
         if (dao != null) {
             val existentes = dao.contarPendientesPorLibroYUsuario(libroId, usuarioId)
             if (existentes > 0) {
-                return ResultadoPrestamo.ErrorDesconocido("Ya tienes una solicitud pendiente de este libro")
+                return ResultadoPrestamo.ErrorDesconocido(ErrorApp.SOLICITUD_PENDIENTE)
             }
         }
         return try {
@@ -72,20 +72,20 @@ open class PrestamoRepository(
                 when (resp.code()) {
                     409 -> ResultadoPrestamo.SinEjemplares
                     404 -> ResultadoPrestamo.UsuarioNoEncontrado
-                    else -> ResultadoPrestamo.ErrorDesconocido("Error ${resp.code()}")
+                    else -> ResultadoPrestamo.ErrorDesconocido(ErrorApp.SERVIDOR)
                 }
             }
         } catch (e: IOException) {
             try {
                 val guardado = guardarPrestamoOffline(libroId, titulo, usuarioId, timestamp)
                 if (guardado == null) {
-                    return ResultadoPrestamo.ErrorDesconocido("Ya tienes una solicitud pendiente de este libro")
+                    return ResultadoPrestamo.ErrorDesconocido(ErrorApp.SOLICITUD_PENDIENTE)
                 }
             } catch (_: Exception) {
             }
             ResultadoPrestamo.GuardadoSinConexion
         } catch (e: Exception) {
-            ResultadoPrestamo.ErrorDesconocido(e.message ?: "Error desconocido")
+            ResultadoPrestamo.ErrorDesconocido(ErrorApp.DESCONOCIDO)
         }
     }
 
@@ -103,15 +103,15 @@ open class PrestamoRepository(
                 Result.success(Unit)
             } else {
                 when (resp.code()) {
-                    409 -> {
-                        dao?.actualizarEstado(p.id, "RECHAZADO_SIN_EJEMPLARES")
-                        Result.failure(Exception("Sin ejemplares"))
-                    }
-                    404 -> {
-                        dao?.actualizarEstado(p.id, "ERROR")
-                        Result.failure(Exception("Usuario no encontrado"))
-                    }
-                    else -> Result.failure(Exception("Error ${resp.code()}"))
+                        409 -> {
+                            dao?.actualizarEstado(p.id, "RECHAZADO_SIN_EJEMPLARES")
+                            Result.failure(ErrorAppException(ErrorApp.SIN_EJEMPLARES))
+                        }
+                        404 -> {
+                            dao?.actualizarEstado(p.id, "ERROR")
+                            Result.failure(ErrorAppException(ErrorApp.USUARIO_NO_ENCONTRADO))
+                        }
+                        else -> Result.failure(ErrorAppException(ErrorApp.SERVIDOR))
                 }
             }
         } catch (e: IOException) {

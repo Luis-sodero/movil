@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -53,27 +52,151 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bibliotecnm.data.DataBaseLocal
+import com.example.bibliotecnm.data.ErrorApp
 import com.example.bibliotecnm.data.LibroVistaDto
 import com.example.bibliotecnm.data.PrestamoRepository
 import com.example.bibliotecnm.data.RetrofitClient
+import com.example.bibliotecnm.data.SesionUsuario
 import com.example.bibliotecnm.data.SyncManager
+import com.example.bibliotecnm.ui.mensaje
 import com.example.bibliotecnm.ui.theme.BibliotecnmTheme
+import com.example.bibliotecnm.R
 import com.example.bibliotecnm.viewmodel.LibrosUiState
 import com.example.bibliotecnm.viewmodel.LibrosViewModel
 import com.example.bibliotecnm.viewmodel.SolicitudUiState
+import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.Normalizer
 
-class MainActivity : ComponentActivity() {
+private fun sinAcentos(texto: String): String {
+    return Normalizer.normalize(texto, Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}+"), "")
+}
+
+private fun libroCoincide(libro: LibroVistaDto, texto: String): Boolean {
+    val busqueda = sinAcentos(texto.trim()).lowercase()
+    if (busqueda.isEmpty()) return true
+
+    return listOf(libro.titulo, libro.autores, libro.generos)
+        .any { campo -> campo != null && sinAcentos(campo).lowercase().contains(busqueda) }
+}
+
+@Composable
+private fun ListaLibros(
+    libros: List<LibroVistaDto>,
+    solicitudState: SolicitudUiState,
+    onSolicitar: (LibroVistaDto) -> Unit,
+    onVerDetalle: (LibroVistaDto) -> Unit
+) {
+    if (libros.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = stringResource(R.string.sin_libros))
+        }
+        return
+    }
+
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(libros) { libro ->
+            val disponibles = libro.ejemplaresDisponibles ?: 0
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = RetrofitClient.urlImagen(libro.urlPortada),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(width = 60.dp, height = 90.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.ic_book_placeholder),
+                        error = painterResource(R.drawable.ic_book_placeholder)
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = libro.titulo ?: "",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.autor,
+                                libro.autores ?: stringResource(R.string.valor_desconocido)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.generos,
+                                libro.generos ?: stringResource(R.string.valor_desconocido)
+                            ),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.anio,
+                                libro.anio?.toString() ?: stringResource(R.string.valor_desconocido)
+                            ),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = if (disponibles > 0) {
+                                stringResource(R.string.disponible, disponibles)
+                            } else {
+                                stringResource(R.string.no_disponible)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (disponibles > 0) Color(0xFF2E7D32) else Color.Red
+                        )
+                    }
+
+                    Column {
+                        TextButton(onClick = { onVerDetalle(libro) }) {
+                            Text(text = stringResource(R.string.ver_detalle))
+                        }
+                        Button(
+                            onClick = { onSolicitar(libro) },
+                            enabled = disponibles > 0 && solicitudState !is SolicitudUiState.Cargando
+                        ) {
+                            Text(text = stringResource(R.string.solicitar))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+class MainActivity : AppCompatActivity() {
     private var syncManager: SyncManager? = null
     private var connectivityManager: ConnectivityManager? = null
 
@@ -81,6 +204,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val app = application
+        SesionUsuario.restaurar(app)
         val db = DataBaseLocal.getDatabase(app)
         val dao = db.prestamoPendienteDao()
         val repo = PrestamoRepository(dao, RetrofitClient.apiService)
@@ -112,6 +236,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PantallaPrincipal(
     onIrAPerfil: () -> Unit = {},
+    onIrADetalle: (LibroVistaDto) -> Unit = {},
     librosViewModel: LibrosViewModel = viewModel()
 ) {
     var textSearch by remember { mutableStateOf("") }
@@ -122,10 +247,15 @@ fun PantallaPrincipal(
     val uiState by librosViewModel.uiState.collectAsState()
     val solicitudState by librosViewModel.solicitudState.collectAsState()
     val refrescando by librosViewModel.refrescando.collectAsState()
+    val aviso by librosViewModel.aviso.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val mensajeExito = stringResource(R.string.solicitud_exitosa)
+    val mensajeGuardado = stringResource(R.string.solicitud_guardada)
+    val codigoErrorSolicitud = (solicitudState as? SolicitudUiState.Error)?.codigo
+    val mensajeErrorSolicitud = codigoErrorSolicitud?.let { stringResource(it.mensaje()) } ?: ""
 
     // Recarga al volver a primer plano y cada 30s
     DisposableEffect(lifecycleOwner) {
@@ -151,17 +281,17 @@ fun PantallaPrincipal(
     LaunchedEffect(solicitudState) {
         when (val estado = solicitudState) {
             is SolicitudUiState.Exito -> {
-                Toast.makeText(context, estado.mensaje, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, mensajeExito, Toast.LENGTH_SHORT).show()
                 librosViewModel.resetSolicitudState()
             }
             is SolicitudUiState.GuardadoSinConexion -> {
                 scope.launch {
-                    snackbarHostState.showSnackbar("Sin conexión. Tu solicitud se guardó y se enviará cuando vuelvas a tener internet.")
+                    snackbarHostState.showSnackbar(mensajeGuardado)
                 }
                 librosViewModel.resetSolicitudState()
             }
             is SolicitudUiState.Error -> {
-                Toast.makeText(context, estado.mensaje, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, mensajeErrorSolicitud, Toast.LENGTH_SHORT).show()
                 librosViewModel.resetSolicitudState()
             }
             else -> {}
@@ -187,7 +317,7 @@ fun PantallaPrincipal(
                     onSearch = { activeSearch = false },
                     active = activeSearch,
                     onActiveChange = { activeSearch = it },
-                    placeholder = { Text("Buscar...") },
+                    placeholder = { Text(stringResource(R.string.buscar)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         if (activeSearch) {
@@ -201,7 +331,18 @@ fun PantallaPrincipal(
                         }
                     }
                 ) {
-                    Text(text = "Sugerencias...", modifier = Modifier.padding(16.dp))
+                    val estado = uiState
+                    if (estado is LibrosUiState.Exito) {
+                        ListaLibros(
+                            libros = estado.libros.filter { libroCoincide(it, textSearch) },
+                            solicitudState = solicitudState,
+                            onSolicitar = { libro ->
+                                libroSeleccionado = libro
+                                mostrarDialogo = true
+                            },
+                            onVerDetalle = onIrADetalle
+                        )
+                    }
                 }
 
                 if (!activeSearch) {
@@ -209,26 +350,35 @@ fun PantallaPrincipal(
                         onClick = { librosViewModel.cargarLibros(mostrarCargando = false) },
                         modifier = Modifier.padding(start = 4.dp, top = 8.dp)
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.actualizar))
                     }
                     IconButton(
                         onClick = onIrAPerfil,
                         modifier = Modifier.padding(start = 4.dp, top = 8.dp)
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = "Ir al perfil")
+                        Icon(Icons.Default.Person, contentDescription = stringResource(R.string.ir_al_perfil))
                     }
                 }
             }
 
             if (!activeSearch) {
                 Text(
-                    text = "Títulos Recomendados",
+                    text = stringResource(R.string.titulos_recomendados),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
-                )
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+            )
 
-                when (val estado = uiState) {
+            if (aviso != null) {
+                Text(
+                    text = stringResource((aviso ?: ErrorApp.AVISO_SIN_CONEXION).mensaje()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 4.dp)
+                )
+            }
+
+            when (val estado = uiState) {
                     is LibrosUiState.Cargando -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -243,7 +393,7 @@ fun PantallaPrincipal(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = estado.mensaje)
+                            Text(text = stringResource(estado.codigo.mensaje()))
                         }
                     }
 
@@ -253,72 +403,15 @@ fun PantallaPrincipal(
                             onRefresh = { librosViewModel.cargarLibros(mostrarCargando = false) },
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                items(estado.libros) { libro ->
-                                    val disponibles = libro.ejemplaresDisponibles ?: 0
-
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(width = 60.dp, height = 90.dp)
-                                                    .clip(RoundedCornerShape(4.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(text = "Libro", color = Color.Gray)
-                                            }
-
-                                            Spacer(modifier = Modifier.width(12.dp))
-
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = libro.titulo ?: "",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                Text(
-                                                    text = "Autor: ${libro.autores ?: "-"}",
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                                Text(
-                                                    text = "Géneros: ${libro.generos ?: "-"}",
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                                Text(
-                                                    text = "Año: ${libro.anio ?: "-"}",
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                                Text(
-                                                    text = if (disponibles > 0) "Disponible ($disponibles)" else "No disponible",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = if (disponibles > 0) Color(0xFF2E7D32) else Color.Red
-                                                )
-                                            }
-
-                                            Button(
-                                                onClick = {
-                                                    libroSeleccionado = libro
-                                                    mostrarDialogo = true
-                                                },
-                                                enabled = disponibles > 0 &&
-                                                        solicitudState !is SolicitudUiState.Cargando
-                                            ) {
-                                                Text(text = "Solicitar")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            ListaLibros(
+                                libros = estado.libros.filter { libroCoincide(it, textSearch) },
+                                solicitudState = solicitudState,
+                                onSolicitar = { libro ->
+                                    libroSeleccionado = libro
+                                    mostrarDialogo = true
+                                },
+                                onVerDetalle = onIrADetalle
+                            )
                         }
                     }
                 }
@@ -330,8 +423,15 @@ fun PantallaPrincipal(
     if (mostrarDialogo && libro != null) {
         AlertDialog(
             onDismissRequest = { mostrarDialogo = false },
-            title = { Text(text = "Confirmar préstamo") },
-            text = { Text(text = "¿Solicitar préstamo de \"${libro.titulo ?: ""}\"?") },
+            title = { Text(text = stringResource(R.string.confirmar_prestamo)) },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.confirmar_prestamo_pregunta,
+                        libro.titulo ?: stringResource(R.string.libro_generico)
+                    )
+                )
+            },
         confirmButton = {
             TextButton(
                 onClick = {
@@ -343,12 +443,12 @@ fun PantallaPrincipal(
                     mostrarDialogo = false
                 }
             ) {
-                Text("Confirmar")
+                Text(stringResource(R.string.confirmar))
             }
         },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogo = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancelar))
                 }
             }
         )

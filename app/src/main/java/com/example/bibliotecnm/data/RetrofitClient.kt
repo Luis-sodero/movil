@@ -8,6 +8,9 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
     private const val BASE_URL = "https://gorgeous-refract-provoking.ngrok-free.dev/"
 
+    val baseUrl: String
+        get() = BASE_URL.trimEnd('/')
+
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
@@ -27,4 +30,12 @@ object RetrofitClient {
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
+
+    fun urlImagen(ruta: String?): String? {
+        if (ruta.isNullOrBlank()) return null
+        if (ruta.startsWith("http://") || ruta.startsWith("https://")) return ruta
+        return BASE_URL.trimEnd('/') + "/" + ruta.trimStart('/')
+    }
+
+    fun urlPdf(ruta: String?): String? = urlImagen(ruta)
 }

@@ -1,0 +1,111 @@
+<resources>
+    <string name="app_name">Bibliotecnm</string>
+    <string name="logo_letra">B</string>
+
+    <string name="volver">Retour</string>
+    <string name="actualizar">Actualiser</string>
+    <string name="cancelar">Annuler</string>
+    <string name="confirmar">Confirmer</string>
+    <string name="entendido">Compris</string>
+    <string name="reintentar">Réessayer</string>
+    <string name="eliminar">Supprimer</string>
+    <string name="leer">Lire</string>
+    <string name="buscar">Rechercher...</string>
+    <string name="libro_generico">Livre</string>
+    <string name="libro_sin_titulo">Livre sans titre</string>
+    <string name="usuario_generico">Utilisateur</string>
+    <string name="lector_generico">lecteur</string>
+    <string name="autor">Auteur : %1$s</string>
+    <string name="autor_desconocido">Inconnu</string>
+    <string name="generos">Genres : %1$s</string>
+    <string name="anio">Année : %1$s</string>
+    <string name="valor_desconocido">-</string>
+    <string name="disponible">Disponible (%1$d)</string>
+    <string name="no_disponible">Indisponible</string>
+    <string name="ver_detalle">Voir les détails</string>
+    <string name="solicitar">Demander</string>
+
+    <string name="sin_libros">Aucun livre trouvé</string>
+    <string name="titulos_recomendados">Titres recommandés</string>
+    <string name="confirmar_prestamo">Confirmer le prêt</string>
+    <string name="confirmar_prestamo_pregunta">Demander le prêt de « %1$s » ?</string>
+    <string name="aviso_sin_conexion">Hors ligne. Affichage des données enregistrées.</string>
+    <string name="aviso_no_actualizado">Impossible de mettre à jour. Affichage des données enregistrées.</string>
+    <string name="solicitud_guardada">Hors ligne. Votre demande a été enregistrée et sera envoyée dès votre retour en ligne.</string>
+    <string name="solicitud_exitosa">Demande de prêt envoyée avec succès</string>
+    <string name="ir_al_perfil">Aller au profil</string>
+
+    <string name="login_bienvenida">Votre bibliothèque, toujours avec vous</string>
+    <string name="login_titulo">Se connecter</string>
+    <string name="login_subtitulo">Connectez-vous avec l\'e-mail et le mot de passe enregistrés à la bibliothèque.</string>
+    <string name="correo_electronico">Adresse e-mail</string>
+    <string name="correo_ejemplo">utilisateur@email.com</string>
+    <string name="contrasena">Mot de passe</string>
+    <string name="contrasena_registro">Mot de passe (6 caractères minimum)</string>
+    <string name="ocultar">Masquer</string>
+    <string name="ver_contrasena">Afficher</string>
+    <string name="verificando">Connexion…</string>
+    <string name="entrar">Connexion</string>
+    <string name="no_tienes_cuenta">Pas encore de compte ? Créer un compte</string>
+    <string name="usuario_prueba">Utilisateur de test : prueba@bibliotecnm.local · mot de passe %1$s</string>
+    <string name="api_url">API : %1$s</string>
+
+    <string name="registro_titulo">Créer un compte</string>
+    <string name="registro_subtitulo">Inscrivez-vous pour utiliser votre bibliothèque.</string>
+    <string name="nombre">Nom</string>
+    <string name="nombre_placeholder">Votre nom complet</string>
+    <string name="registrando">Inscription…</string>
+    <string name="registrarme">S\'inscrire</string>
+    <string name="ya_tengo_cuenta">J\'ai déjà un compte. Retour à la connexion</string>
+
+    <string name="detalle_titulo">Détails du livre</string>
+    <string name="disponible_sin_conexion">Disponible hors ligne</string>
+    <string name="leer_libro">Lire le livre</string>
+    <string name="eliminar_descarga">Supprimer le téléchargement</string>
+    <string name="descargar_para_leer">Télécharger pour lire hors ligne</string>
+    <string name="descargando">Téléchargement %1$d %%</string>
+
+    <string name="lectura_titulo">Lecture</string>
+    <string name="abriendo_pdf">Ouverture du PDF...</string>
+    <string name="pagina">Page %1$d sur %2$d</string>
+    <string name="pagina_contenido">Page %1$d</string>
+
+    <string name="perfil_titulo">Mes prêts</string>
+    <string name="rol">Rôle : %1$s</string>
+    <string name="mis_descargas">Mes téléchargements</string>
+    <string name="configuracion_perfil">Paramètres du profil</string>
+    <string name="configuracion">Paramètres</string>
+    <string name="cerrar_sesion">Se déconnecter</string>
+    <string name="devuelto">Retourné</string>
+    <string name="devolver_el">À rendre le : %1$s</string>
+
+    <string name="descargas_vacias">Aucun téléchargement. Ouvrez un livre et appuyez sur &quot;Télécharger pour lire hors ligne&quot;.</string>
+    <string name="eliminar_descarga_pregunta">Supprimer le téléchargement de « %1$s » ?</string>
+
+    <string name="idioma">Langue</string>
+    <string name="idioma_sistema">Utiliser la langue du système</string>
+    <string name="idioma_es">Español</string>
+    <string name="idioma_en">English</string>
+    <string name="idioma_fr">Français</string>
+    <string name="idioma_ja">日本語</string>
+
+    <string name="error_campos_login">Saisissez votre e-mail et votre mot de passe.</string>
+    <string name="error_campos_registro">Remplissez tous les champs.</string>
+    <string name="error_correo_invalido">Saisissez une adresse e-mail valide.</string>
+    <string name="error_contrasena_corta">Le mot de passe doit contenir au moins 6 caractères.</string>
+    <string name="error_credenciales">E-mail ou mot de passe incorrect.</string>
+    <string name="error_correo_existe">Un compte avec cet e-mail existe déjà.</string>
+    <string name="error_datos_invalidos">Vérifiez les champs du formulaire.</string>
+    <string name="error_respuesta">Réponse du serveur invalide.</string>
+    <string name="error_sin_conexion">Pas de connexion. Vérifiez votre internet et réessayez.</string>
+    <string name="error_servidor">Erreur du serveur. Réessayez.</string>
+    <string name="error_sin_espacio">Plus d\'espace sur l\'appareil. Libérez de l\'espace et réessayez.</string>
+    <string name="error_pdf_danado">Le fichier PDF est endommagé. Téléchargez-le à nouveau.</string>
+    <string name="error_pdf_no_disponible">Ce livre n\'a pas de PDF à télécharger.</string>
+    <string name="error_lectura_sin_pdf">Vous avez besoin d\'une connexion ou de télécharger le livre pour le lire.</string>
+    <string name="error_sin_ejemplares">Aucun exemplaire disponible.</string>
+    <string name="error_usuario_no_encontrado">Utilisateur introuvable.</string>
+    <string name="error_sesion_invalida">Session non valide. Connectez-vous à nouveau.</string>
+    <string name="error_solicitud_pendiente">Vous avez déjà une demande en attente pour ce livre.</string>
+    <string name="error_desconocido">L\'action n\'a pas pu être effectuée. Réessayez.</string>
+</resources>

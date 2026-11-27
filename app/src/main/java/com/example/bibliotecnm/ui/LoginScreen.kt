@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,12 +53,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bibliotecnm.R
+import com.example.bibliotecnm.data.RetrofitClient
 import com.example.bibliotecnm.viewmodel.LoginUiState
 import com.example.bibliotecnm.viewmodel.LoginViewModel
 
 @Composable
 fun PantallaLogin(
     onLoginExitoso: () -> Unit,
+    onCrearCuenta: () -> Unit = {},
     loginViewModel: LoginViewModel = viewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
@@ -107,7 +111,7 @@ fun PantallaLogin(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "B",
+                    text = stringResource(R.string.logo_letra),
                     color = Color(0xFF042F2E),
                     fontSize = 34.sp,
                     fontWeight = FontWeight.ExtraBold
@@ -117,13 +121,13 @@ fun PantallaLogin(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Bibliotecnm",
+                text = stringResource(R.string.app_name),
                 color = Color.White,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Tu biblioteca, siempre contigo",
+                text = stringResource(R.string.login_bienvenida),
                 color = Color(0xFFCCFBF1),
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -140,13 +144,13 @@ fun PantallaLogin(
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(
-                        text = "Iniciar sesión",
+                        text = stringResource(R.string.login_titulo),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Accede con el correo y la contraseña registrados en la biblioteca.",
+                        text = stringResource(R.string.login_subtitulo),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -160,8 +164,8 @@ fun PantallaLogin(
                             loginViewModel.limpiarError()
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Correo electrónico") },
-                        placeholder = { Text("usuario@correo.com") },
+                        label = { Text(stringResource(R.string.correo_electronico)) },
+                        placeholder = { Text(stringResource(R.string.correo_ejemplo)) },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = null)
                         },
@@ -183,7 +187,7 @@ fun PantallaLogin(
                             loginViewModel.limpiarError()
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Contraseña") },
+                        label = { Text(stringResource(R.string.contrasena)) },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = null)
                         },
@@ -192,7 +196,11 @@ fun PantallaLogin(
                                 onClick = { mostrarPassword = !mostrarPassword },
                                 enabled = !cargando
                             ) {
-                                Text(if (mostrarPassword) "Ocultar" else "Ver")
+                                Text(
+                                    stringResource(
+                                        if (mostrarPassword) R.string.ocultar else R.string.ver_contrasena
+                                    )
+                                )
                             }
                         },
                         singleLine = true,
@@ -212,7 +220,7 @@ fun PantallaLogin(
                         )
                     )
 
-                    val error = (uiState as? LoginUiState.Error)?.mensaje
+                    val error = (uiState as? LoginUiState.Error)?.codigo
                     if (error != null) {
                         Spacer(modifier = Modifier.height(12.dp))
                         Surface(
@@ -220,7 +228,7 @@ fun PantallaLogin(
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             Text(
-                                text = error,
+                                text = stringResource(error.mensaje()),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 style = MaterialTheme.typography.bodySmall
@@ -245,16 +253,26 @@ fun PantallaLogin(
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Verificando…")
+                            Text(text = stringResource(R.string.verificando))
                         } else {
-                            Text(text = "Entrar", fontWeight = FontWeight.SemiBold)
+                            Text(text = stringResource(R.string.entrar), fontWeight = FontWeight.SemiBold)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    TextButton(
+                        onClick = onCrearCuenta,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !cargando
+                    ) {
+                        Text(stringResource(R.string.no_tienes_cuenta))
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Usuario de prueba: prueba@bibliotecnm.local · contraseña 123456",
+                        text = stringResource(R.string.usuario_prueba, "123456"),
                         modifier = Modifier.fillMaxWidth(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -266,7 +284,7 @@ fun PantallaLogin(
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "API: https://gorgeous-refract-provoking.ngrok-free.dev",
+                text = stringResource(R.string.api_url, RetrofitClient.baseUrl),
                 color = Color(0xFF99F6E4),
                 style = MaterialTheme.typography.bodySmall
             )

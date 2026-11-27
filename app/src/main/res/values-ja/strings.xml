@@ -1,0 +1,111 @@
+<resources>
+    <string name="app_name">Bibliotecnm</string>
+    <string name="logo_letra">B</string>
+
+    <string name="volver">戻る</string>
+    <string name="actualizar">更新</string>
+    <string name="cancelar">キャンセル</string>
+    <string name="confirmar">確認</string>
+    <string name="entendido">わかりました</string>
+    <string name="reintentar">再試行</string>
+    <string name="eliminar">削除</string>
+    <string name="leer">読む</string>
+    <string name="buscar">検索...</string>
+    <string name="libro_generico">書籍</string>
+    <string name="libro_sin_titulo">無題の書籍</string>
+    <string name="usuario_generico">ユーザー</string>
+    <string name="lector_generico">読者</string>
+    <string name="autor">著者: %1$s</string>
+    <string name="autor_desconocido">不明</string>
+    <string name="generos">ジャンル: %1$s</string>
+    <string name="anio">年: %1$s</string>
+    <string name="valor_desconocido">-</string>
+    <string name="disponible">利用可能 (%1$d)</string>
+    <string name="no_disponible">利用不可</string>
+    <string name="ver_detalle">詳細を見る</string>
+    <string name="solicitar">リクエスト</string>
+
+    <string name="sin_libros">書籍が見つかりません</string>
+    <string name="titulos_recomendados">おすすめの書籍</string>
+    <string name="confirmar_prestamo">貸出の確認</string>
+    <string name="confirmar_prestamo_pregunta">「%1$s」の貸出をリクエストしますか？</string>
+    <string name="aviso_sin_conexion">オフラインです。保存済みのデータを表示しています。</string>
+    <string name="aviso_no_actualizado">更新できませんでした。保存済みのデータを表示しています。</string>
+    <string name="solicitud_guardada">オフラインです。リクエストは保存され、接続が戻ったら送信されます。</string>
+    <string name="solicitud_exitosa">貸出リクエストが完了しました</string>
+    <string name="ir_al_perfil">プロフィールへ</string>
+
+    <string name="login_bienvenida">いつでもあなたの図書館</string>
+    <string name="login_titulo">ログイン</string>
+    <string name="login_subtitulo">図書館に登録済みのメールとパスワードでログインしてください。</string>
+    <string name="correo_electronico">メールアドレス</string>
+    <string name="correo_ejemplo">user@email.com</string>
+    <string name="contrasena">パスワード</string>
+    <string name="contrasena_registro">パスワード（6文字以上）</string>
+    <string name="ocultar">非表示</string>
+    <string name="ver_contrasena">表示</string>
+    <string name="verificando">ログイン中…</string>
+    <string name="entrar">ログイン</string>
+    <string name="no_tienes_cuenta">アカウントをお持ちでない方はこちら</string>
+    <string name="usuario_prueba">テストユーザー: prueba@bibliotecnm.local · パスワード %1$s</string>
+    <string name="api_url">API: %1$s</string>
+
+    <string name="registro_titulo">アカウント作成</string>
+    <string name="registro_subtitulo">登録して図書館を利用しましょう。</string>
+    <string name="nombre">名前</string>
+    <string name="nombre_placeholder">氏名</string>
+    <string name="registrando">登録中…</string>
+    <string name="registrarme">登録する</string>
+    <string name="ya_tengo_cuenta">すでにアカウントをお持ちの方はログインに戻る</string>
+
+    <string name="detalle_titulo">書籍の詳細</string>
+    <string name="disponible_sin_conexion">オフラインで利用可能</string>
+    <string name="leer_libro">書籍を読む</string>
+    <string name="eliminar_descarga">ダウンロードを削除</string>
+    <string name="descargar_para_leer">オフライン用にダウンロード</string>
+    <string name="descargando">ダウンロード中 %1$d%%</string>
+
+    <string name="lectura_titulo">リーダー</string>
+    <string name="abriendo_pdf">PDFを開いています...</string>
+    <string name="pagina">%1$d / %2$d ページ</string>
+    <string name="pagina_contenido">%1$d ページ</string>
+
+    <string name="perfil_titulo">貸出履歴</string>
+    <string name="rol">役割: %1$s</string>
+    <string name="mis_descargas">ダウンロード一覧</string>
+    <string name="configuracion_perfil">プロフィール設定</string>
+    <string name="configuracion">設定</string>
+    <string name="cerrar_sesion">ログアウト</string>
+    <string name="devuelto">返却済み</string>
+    <string name="devolver_el">返却期限: %1$s</string>
+
+    <string name="descargas_vacias">ダウンロードはありません。書籍を開いて「オフライン用にダウンロード」を押してください。</string>
+    <string name="eliminar_descarga_pregunta">「%1$s」のダウンロードを削除しますか？</string>
+
+    <string name="idioma">言語</string>
+    <string name="idioma_sistema">システムの言語を使用</string>
+    <string name="idioma_es">Español</string>
+    <string name="idioma_en">English</string>
+    <string name="idioma_fr">Français</string>
+    <string name="idioma_ja">日本語</string>
+
+    <string name="error_campos_login">メールアドレスとパスワードを入力してください。</string>
+    <string name="error_campos_registro">すべての項目を入力してください。</string>
+    <string name="error_correo_invalido">有効なメールアドレスを入力してください。</string>
+    <string name="error_contrasena_corta">パスワードは6文字以上で入力してください。</string>
+    <string name="error_credenciales">メールアドレスまたはパスワードが正しくありません。</string>
+    <string name="error_correo_existe">このメールアドレスのアカウントは既に存在します。</string>
+    <string name="error_datos_invalidos">フォームの内容を確認してください。</string>
+    <string name="error_respuesta">サーバーの応答が無効です。</string>
+    <string name="error_sin_conexion">接続がありません。インターネットを確認して再度お試しください。</string>
+    <string name="error_servidor">サーバーエラーです。再度お試しください。</string>
+    <string name="error_sin_espacio">端末の空き容量が不足しています。容量を空けて再度お試しください。</string>
+    <string name="error_pdf_danado">PDFファイルが破損しています。再度ダウンロードしてください。</string>
+    <string name="error_pdf_no_disponible">この書籍にはダウンロードできるPDFがありません。</string>
+    <string name="error_lectura_sin_pdf">読むには接続が必要か、書籍をダウンロードしてください。</string>
+    <string name="error_sin_ejemplares">利用可能な冊子がありません。</string>
+    <string name="error_usuario_no_encontrado">ユーザーが見つかりません。</string>
+    <string name="error_sesion_invalida">セッションが無効です。再度ログインしてください。</string>
+    <string name="error_solicitud_pendiente">この書籍のリクエストはすでに保留中です。</string>
+    <string name="error_desconocido">操作を完了できませんでした。再度お試しください。</string>
+</resources>
